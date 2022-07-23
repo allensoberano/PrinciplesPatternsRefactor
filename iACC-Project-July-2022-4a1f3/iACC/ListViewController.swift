@@ -4,9 +4,15 @@
 
 import UIKit
 
+protocol ItemsService {
+    func loadItems(completion: @escaping (Result<[ItemViewModel], Error>) -> Void)
+}
+
 class ListViewController: UITableViewController {
 	var items = [ItemViewModel]()
-	
+
+    var service: ItemsService?
+    
 	var retryCount = 0
 	var maxRetryCount = 0
 	var shouldRetry = false
@@ -68,21 +74,7 @@ class ListViewController: UITableViewController {
 	@objc private func refresh() {
 		refreshControl?.beginRefreshing()
 		if fromFriendsScreen {
-			FriendsAPI.shared.loadFriends { [weak self] result in
-				DispatchQueue.mainAsyncIfNeeded {
-                    self?.handleAPIResult(result.map { items in
-                        if User.shared?.isPremium == true {
-                            (UIApplication.shared.connectedScenes.first?.delegate as! SceneDelegate).cache.save(items)
-                        }
-
-                        return items.map { item in
-                            ItemViewModel(friend: item, selection: {
-                                self?.select(friend: item)
-                            })
-                        }
-                    })
-				}
-			}
+            service?.loadItems(completion: handleAPIResult)
 		} else if fromCardsScreen {
 			CardAPI.shared.loadCards { [weak self] result in
 				DispatchQueue.mainAsyncIfNeeded {
@@ -185,18 +177,6 @@ struct ItemViewModel {
     let title: String
     let subtitle: String
     let select: () -> Void
-
-    init(_ item: Any, longDateStyle: Bool, selection: @escaping () -> Void) {
-        if let friend = item as? Friend {
-            self.init(friend: friend, selection: selection)
-        } else if let card = item as? Card {
-            self.init(card: card, selection: selection)
-        } else if let transfer = item as? Transfer {
-            self.init(transfer: transfer, longDateStyle: longDateStyle, selection: selection)
-        } else {
-            fatalError("unknown item: \(item)")
-        }
-    }
 
     init(friend: Friend, selection: @escaping () -> Void) {
         title = friend.name
