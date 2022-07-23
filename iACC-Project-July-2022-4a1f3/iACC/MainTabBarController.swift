@@ -54,6 +54,12 @@ class MainTabBarController: UITabBarController {
 	private func makeFriendsList() -> ListViewController {
 		let vc = ListViewController()
 		vc.fromFriendsScreen = true
+        vc.shouldRetry = true
+        vc.maxRetryCount = 2
+
+        vc.title = "Friends"
+        vc.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: vc, action: #selector(vc.addFriend))
+
 
         vc.service = FriendsAPIItemServiceAdapter(
             api: FriendsAPI.shared,

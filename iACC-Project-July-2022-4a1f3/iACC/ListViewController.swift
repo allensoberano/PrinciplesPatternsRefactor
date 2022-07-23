@@ -30,15 +30,7 @@ class ListViewController: UITableViewController {
 		refreshControl = UIRefreshControl()
 		refreshControl?.addTarget(self, action: #selector(refresh), for: .valueChanged)
 		
-		if fromFriendsScreen {
-			shouldRetry = true
-			maxRetryCount = 2
-			
-			title = "Friends"
-			
-			navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addFriend))
-			
-		} else if fromCardsScreen {
+		if fromCardsScreen {
 			shouldRetry = false
 			
 			title = "Cards"
